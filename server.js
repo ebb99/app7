@@ -7,9 +7,14 @@ const express = require('express');
 const pg = require('pg');
 const path = require('path');
 const { log } = require('console');
+const cron = require("node-cron");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+const SPIELZEIT_MINUTEN = 10;
+const NACHSPIELZEIT_MINUTEN = 10;
+
 
 // Middleware
 app.use(express.json());
@@ -32,6 +37,92 @@ pool.connect((err, client, done) => {
     client.release();
     console.log('PostgreSQL-Datenbank verbunden!');
 });
+
+
+
+cron.schedule("* * * * *", async () => {
+    try {
+        const result = await pool.query(
+            `
+            UPDATE spiele
+            SET statuswort = 'live'
+            WHERE statuswort = 'geplant'
+              AND anstoss <= NOW()
+            `
+        );
+
+        if (result.rowCount > 0) {
+            console.log(`Statuswechsel: ${result.rowCount} Spiel(e) auf LIVE gesetzt`);
+        }
+    } catch (err) {
+        console.error("Cron Fehler (Statuswechsel):", err);
+    }
+});
+
+//import cron from "node-cron";
+// oder: const cron = require("node-cron");
+
+cron.schedule("* * * * *", async () => {
+    try {
+        const result = await pool.query(
+            `
+            UPDATE spiele
+            SET statuswort = 'beendet'
+            WHERE statuswort = 'live'
+              AND anstoss
+                  + INTERVAL '${SPIELZEIT_MINUTEN} minutes'
+                  + INTERVAL '${NACHSPIELZEIT_MINUTEN} minutes'
+                  <= NOW()
+            `
+        );
+
+        if (result.rowCount > 0) {
+            console.log(
+                `Statuswechsel: ${result.rowCount} Spiel(e) auf BEENDET gesetzt`
+            );
+        }
+
+    } catch (err) {
+        console.error("Cron Fehler (Spiel beenden):", err);
+    }
+});
+
+
+
+app.get("/api/spiele", async (req, res) => {
+    try {
+        // Status aktualisieren
+        await pool.query(`
+            UPDATE spiele
+            SET statuswort = 'live'
+            WHERE statuswort = 'geplant'
+              AND anstoss <= NOW()
+        `);
+          await pool.query(`
+    UPDATE spiele
+    SET statuswort = 'beendet'
+    WHERE statuswort = 'live'
+      AND anstoss
+          + INTERVAL '${SPIELZEIT_MINUTEN} minutes'
+          + INTERVAL '${NACHSPIELZEIT_MINUTEN} minutes'
+          <= NOW()
+`);
+
+
+
+        // Spiele laden
+        const result = await pool.query(
+            "SELECT * FROM spiele ORDER BY anstoss"
+        );
+
+        res.json(result.rows);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Fehler beim Laden der Spiele" });
+    }
+});
+
 
 // DELETE ein Spiel
 app.delete('/api/spiele/:id', async (req, res) => {
