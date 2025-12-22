@@ -356,7 +356,8 @@ document.getElementById("btnErgebnis").addEventListener("click", async () => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 heimtore: Number(heimtore),
-                gasttore: Number(gasttore)
+                gasttore: Number(gasttore),
+                statuswort: 'ausgewertet'
             })
         });
 

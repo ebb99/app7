@@ -199,7 +199,7 @@ app.get('/api/spiele', async (req, res) => {
 // Nur Ergebnis (Tore) aktualisieren
 app.patch("/api/spiele/:id/ergebnis", async (req, res) => {
     const { id } = req.params;
-    const { heimtore, gasttore } = req.body;
+    const { heimtore, gasttore,statuswort } = req.body;
 
     // einfache Validierung
     if (heimtore === undefined || gasttore === undefined) {
@@ -211,11 +211,12 @@ app.patch("/api/spiele/:id/ergebnis", async (req, res) => {
             `
             UPDATE spiele
             SET heimtore = $1,
-                gasttore = $2
-            WHERE id = $3
-            RETURNING id, heimtore, gasttore
+                gasttore = $2,
+                statuswort = $3
+            WHERE id = $4
+            RETURNING id, heimtore, gasttore,statuswort
             `,
-            [heimtore, gasttore, id]
+            [heimtore, gasttore,statuswort, id]
         );
 
         if (result.rowCount === 0) {
