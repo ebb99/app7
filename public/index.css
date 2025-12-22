@@ -1,0 +1,77 @@
+ body {
+	display: grid;
+	gap: 0.5em;
+}
+/* 3-spaltiges Layout für breitere Viewports */
+
+@media (min-width: 45em) {
+	body {
+		grid-template-columns: 1fr 3fr 1fr;
+		grid-template-rows: auto 1fr min-content;
+	}
+}
+
+header,
+nav,
+main,
+article,
+section,
+aside,
+footer {
+	border-radius: 0 0.5em 0.5em;
+	border: thin solid;
+	padding: 1em;
+}
+
+header,
+footer {
+	grid-column: 1 / -1;
+}
+
+header {
+	background: #F1F3F4;
+	border-color: #d5d5d5;
+	grid-column: 1 / -1;
+	grid-row: 1;
+	display: grid;
+	grid-template-columns: 4em 1fr;
+	gap: .5em;
+	img {
+		width: 2.25em;
+		aspect-ratio: 1/1;
+		padding-top: 1.5em;
+	}
+}
+
+nav {
+	background: #fffbf0;
+	border-color: #e7c157;
+}
+
+main {
+	background: #ffede0;
+	border-color: #df6c20;
+}
+
+aside {
+	background: #ebf5d7;
+	border-color: #8db243;
+}
+
+footer {
+	background: #e4ebf2;
+	border-color: #8a9da8;
+}
+
+footer * {
+	float: right;
+	clear: right;
+	margin: 0 0 1em;
+}
+
+body {
+	margin: 0 auto;
+	max-width: 100em;
+	font-family: sans-serif;
+}
+

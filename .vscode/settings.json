@@ -1,0 +1,17 @@
+{
+    "sqltools.connections": [
+        {
+            "pgOptions": {
+                "ssl": {
+                    "rejectUnauthorized": false
+                }
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "name": "app6",
+            "connectString": "postgresql://postgres:FhsoJDUUBeZrZWCOdaLTpyEmTzgKIYBg@caboose.proxy.rlwy.net:57443/railway"
+        }
+    ]
+}

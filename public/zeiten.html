@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Zeiten verwalten</title>
+    <link rel="stylesheet" type="text/css" href="zeiten.css">
+
+</head>
+<body>
+<header>
+    <img src="ebbild_192.png" alt="ebb" style="width:60px;height:65px;">
+	<h1>Administrator Dashboard</h1> 
+    <button onclick="clearLog()">Log löschen</button>
+    <div id="console"></div>
+
+</header>
+
+<nav>
+	<h2>Navigation</h2>
+	<ul>
+		<li><a href="index.html">Home</a></li>
+		<li><a href="login_intern.html">Interner Bereich</a></li>
+        <li><a aria-current="page">Zeiten</a></li>
+			
+	</ul>
+</nav>
+
+<main>
+<h2>Neue Zeit eingeben</h2>
+
+<!-- Neue Zeit eingeben -->
+
+<input type="datetime-local" id="zeitInput">
+<button id="saveBtn">Speichern</button>
+
+<hr>
+
+<h2>Gespeicherte Zeiten</h2>
+
+<select id="zeitenSelect"></select>
+<button id="deleteBtn">Ausgewählte Zeit löschen</button>
+<hr>
+<h2>Neuen Verein eingeben</h2>
+
+<input type="text" id="VereinInput" placeholder="Verein Name">
+<button id="saveVerein">Speichern</button>
+
+<h2>Gespeicherte Vereine</h2>
+
+<select id="VereineSelect"></select>
+<button id="deleteVerein">Ausgewählten Verein löschen</button>
+</main>
+
+<aside>
+
+    <div id="spalte1" >
+        <h2>Auswahl</h2>
+
+         <h3>Zeiten</h3> 
+        <select id="AuswahlzeitSelect"></select> 
+         <h3>Heimverein</h3>  
+        <select id="HeimvereinSelect"></select> 
+
+         <h3>Gastverein</h3>  
+        <select id="GastvereinSelect"></select>
+
+        <h3>Spiel speichern:</h3>
+        <button id="saveSpiel">Spiel Speichern</button>
+    </div>
+ 
+    
+
+    <div id="spalte2" >
+        <h3>Gespeicherte Spiele</h3>
+        <select id="SpieleSelect"></select>
+    <button id="deleteSpiel">Ausgewähltes Spiel löschen</button>
+
+
+
+<br><br>
+
+<label>Heimtore:</label>
+<input type="number" id="heimtore" min="0">
+
+<label>Gasttore:</label>
+<input type="number" id="gasttore" min="0">
+
+<br><br>
+
+<button id="btnErgebnis">Ergebnis speichern</button>
+
+
+<p id="meldung"></p>
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+  
+    
+  </aside>
+
+<footer>
+	<h2>Fußzeile</h2>
+</footer>
+
+
+
+
+<script>
+ document.addEventListener('DOMContentLoaded', () => {
+    ladeZeiten();
+    ladeVereine();
+    ladespiele()
+});
+function log(message) {
+  const consoleArea = document.getElementById("console");
+  const line = document.createElement("div");
+  line.textContent = message;
+  consoleArea.appendChild(line);
+}
+function clearLog() {
+  const consoleArea = document.getElementById("console");
+  consoleArea.textContent = "";
+}
+ async function ladeVereine() {
+    const res = await fetch('/api/vereine');
+    const vereine = await res.json();
+   
+    const select = document.getElementById('VereineSelect');
+    const heimSelect = document.getElementById('HeimvereinSelect');
+    const gastSelect = document.getElementById('GastvereinSelect');
+    select.innerHTML = '';
+    heimSelect.innerHTML = '';
+    gastSelect.innerHTML = '';
+
+    vereine.forEach(z => {
+        const option = document.createElement('option');
+        const option2 = document.createElement('option');
+        const option3 = document.createElement('option');
+        option.value = z.id;
+        option2.value = z.id;
+        option3.value = z.id;
+
+        // Anzeige lokal formatiert
+        const ver = z.vereinsname;
+        option.textContent = ver;
+        option2.textContent = ver;
+        option3.textContent = ver;
+
+        select.appendChild(option);
+        heimSelect.appendChild(option2);
+        gastSelect.appendChild(option3);
+        //log (`Verein geladen: ${ver}`); 
+    });
+}
+async function ladeZeiten() {
+    const res = await fetch('/api/zeiten');
+    const zeiten = await res.json();
+
+    const select = document.getElementById('zeitenSelect');
+    const select2 = document.getElementById('AuswahlzeitSelect');
+    select.innerHTML = '';
+    select2.innerHTML = '';
+
+    zeiten.forEach(z => {
+        const option = document.createElement('option');
+        const option2 = document.createElement('option');
+        option.value = z.id;
+        option2.value = z.id;
+        //log(`Zeit geladen: ${z.zeit}`);
+        // Anzeige lokal formatiert
+        const date = new Date(z.zeit);
+        option.textContent = date.toLocaleString('de-DE');
+        option2.textContent = date.toLocaleString('de-DE');
+       select.appendChild(option);
+        select2.appendChild(option2);
+    });
+}
+//Spiele lade
+// in Arbeit
+ async function ladespiele() {
+    const res = await fetch('/api/spiele');
+    const spiele = await res.json();
+
+    const select = document.getElementById('SpieleSelect');
+    select.innerHTML = '';
+
+    spiele.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.id;
+        // Anzeige lokal formatiert
+        const date = new Date(s.anstoss);
+        const h_tore = s.heimtore;
+        const g_tore = s.gasttore;       
+        option.textContent = `${date.toLocaleString('de-DE')} - ${s.heimverein} gegen ${s.gastverein} ${s.heimtore} : ${s.gasttore} (${s.statuswort})`;
+       select.appendChild(option);
+    });
+}
+
+// neues Spiel speichern
+document.getElementById('saveSpiel').addEventListener('click', async () => {
+
+const select = document.getElementById("AuswahlzeitSelect");
+const anstosstext = select.options[select.selectedIndex].text;
+anstoss = convertToPostgresTimestamp(anstosstext);
+
+const select2 = document.getElementById('HeimvereinSelect');
+const heimverein = select2.options[select2.selectedIndex].text;
+
+const select3 = document.getElementById('GastvereinSelect');
+const gastverein = select3.options[select3.selectedIndex].text;
+
+let heimtore = 0;
+let gasttore = 0;
+const statuswort = 'geplant';
+
+//log(`Neues Spiel: ${anstoss} - ${heimverein} vs ${gastverein} ${heimtore} : ${gasttore} (${statuswort})`);
+
+    if (!anstoss || !heimverein || !gastverein) {
+        alert('Bitte Zeit, Heimverein und Gastverein auswählen');
+        return;
+    }
+
+    const res = await fetch('/api/spiele', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anstoss, heimverein, gastverein, heimtore, gasttore, statuswort  })
+    }); 
+    
+    if (res.ok) {
+          alert("Spiel gespeichert!");
+    
+        } else {
+          alert("Fehler beim Speichern des Spiels.");
+        }
+    ladespiele();
+});
+
+
+// Neuen Verein speichern
+document.getElementById('saveVerein').addEventListener('click', async () => {
+    const verein = document.getElementById('VereinInput').value;
+  
+   
+    if (!verein) {
+        alert('Bitte Verein eingeben');
+        return;
+    }
+   
+    const res = await fetch('/api/vereine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vereinsname: verein })
+    }); 
+   
+    if (res.ok) {
+          alert("Daten gespeichert!");
+          document.getElementById('VereinInput').value = '';
+          ladeVereine();
+        } else {
+          alert("Fehler beim Speichern.");
+        }
+});
+
+// Neue Zeit speichern
+document.getElementById('saveBtn').addEventListener('click', async () => {
+    const value = document.getElementById('zeitInput').value;
+
+    if (!value) {
+        alert('Bitte Datum und Uhrzeit eingeben');
+        return;
+    }
+
+    const isoTimestamp = new Date(value).toISOString();
+ 
+    const res = await fetch('/api/zeiten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zeit: isoTimestamp })
+    }); 
+    
+    if (res.ok) {
+          alert("Daten gespeichert!");
+          document.getElementById('zeitInput').value = '';
+          ladeZeiten();
+        } else {
+          alert("Fehler beim Speichern.");
+        }
+
+    document.getElementById('zeitInput').value = '';
+    ladeZeiten();
+});
+
+// Spiel löschen
+document.getElementById('deleteSpiel').addEventListener('click', async () => {
+    const id = document.getElementById('SpieleSelect').value;
+    if (!id) return;
+
+    await fetch(`/api/spiele/${id}`, { method: 'DELETE' });
+    ladespiele();
+});
+
+
+
+// Zeit löschen
+document.getElementById('deleteBtn').addEventListener('click', async () => {
+    const id = document.getElementById('zeitenSelect').value;
+    if (!id) return;
+
+    await fetch(`/api/zeiten/${id}`, { method: 'DELETE' });
+    ladeZeiten();
+});
+
+// Verein löschen
+document.getElementById('deleteVerein').addEventListener('click', async () => {
+    const id = document.getElementById('VereineSelect').value;
+    if (!id) return;
+
+    await fetch(`/api/vereine/${id}`, { method: 'DELETE' });
+    ladeVereine();          // 🔁 Liste neu laden
+      
+});
+
+function convertToPostgresTimestamp(text) {
+  // "16.12.2025, 11:11:00"
+  const [datum, zeit] = text.split(', ');
+  const [tag, monat, jahr] = datum.split('.');
+
+  return `${jahr}-${monat}-${tag} ${zeit}`;
+}
+document.getElementById("btnErgebnis").addEventListener("click", async () => {
+    const spielId = document.getElementById("SpieleSelect").value;
+    const heimtore = document.getElementById("heimtore").value;
+    const gasttore = document.getElementById("gasttore").value;
+
+    if (!spielId) {
+        return alert("Bitte ein Spiel auswählen");
+    }
+
+    if (heimtore === "" || gasttore === "") {
+        return alert("Bitte beide Tore eingeben");
+    }
+
+    try {
+        const res = await fetch(`/api/spiele/${spielId}/ergebnis`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                heimtore: Number(heimtore),
+                gasttore: Number(gasttore)
+            })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error);
+
+        document.getElementById("meldung").innerText =
+            `Ergebnis gespeichert: ${data.heimtore}:${data.gasttore}`;
+
+    } catch (err) {
+        document.getElementById("meldung").innerText = err.message;
+    }
+    ladespiele();
+});
+document.getElementById("SpieleSelect").addEventListener("change", async e => {
+    const id = e.target.value;
+    if (!id) return;
+
+    const res = await fetch(`/api/spiele/${id}`);
+    const spiel = await res.json();
+
+    document.getElementById("heimtore").value = spiel.heimtore;
+    document.getElementById("gasttore").value = spiel.gasttore;
+   });
+
+</script>
+
+</body>
+</html>
