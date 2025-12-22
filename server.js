@@ -12,8 +12,8 @@ const cron = require("node-cron");
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-const SPIELZEIT_MINUTEN = 10;
-const NACHSPIELZEIT_MINUTEN = 10;
+const SPIELZEIT_MINUTEN = 3;
+const NACHSPIELZEIT_MINUTEN = 2;
 
 
 // Middleware
