@@ -87,6 +87,113 @@ cron.schedule("* * * * *", async () => {
     }
 });
 
+app.get("/api/tips", async (req, res) => {
+    try {
+        const result = await pool.query(
+            `
+            SELECT
+                t.id AS tip_id,
+                t.heimtipp,
+                t.gasttipp,
+                t.created_at,
+
+                u.id AS user_id,
+                u.name AS user_name,
+
+                s.id AS spiel_id,
+                s.heimverein,
+                s.gastverein,
+                s.anstoss,
+                s.statuswort
+            FROM tips t
+            JOIN users u ON u.id = t.user_id
+            JOIN spiele s ON s.id = t.spiel_id
+            ORDER BY s.anstoss, u.name
+            `
+        );
+
+        res.json(result.rows);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Fehler beim Laden der Tipps" });
+    }
+});
+
+
+
+
+
+
+
+app.post("/api/tips", async (req, res) => {
+    const { user_id, spiel_id, heimtipp, gasttipp } = req.body;
+
+    if (
+        user_id === undefined ||
+        spiel_id === undefined ||
+        heimtipp === undefined ||
+        gasttipp === undefined
+    ) {
+        return res.status(400).json({ error: "Unvollständige Daten" });
+    }
+
+    try {
+        // 1️⃣ User prüfen
+        const userResult = await pool.query(
+            "SELECT role FROM users WHERE id = $1",
+            [user_id]
+        );
+
+        if (userResult.rowCount === 0) {
+            return res.status(404).json({ error: "User nicht gefunden" });
+        }
+
+        if (userResult.rows[0].role !== "tipper") {
+            return res.status(403).json({ error: "Nur Tipper dürfen tippen" });
+        }
+
+        // 2️⃣ Spiel prüfen
+        const spielResult = await pool.query(
+            "SELECT statuswort FROM spiele WHERE id = $1",
+            [spiel_id]
+        );
+
+        if (spielResult.rowCount === 0) {
+            return res.status(404).json({ error: "Spiel nicht gefunden" });
+        }
+
+        if (spielResult.rows[0].statuswort !== "geplant") {
+            return res.status(403).json({
+                error: "Tippen nur für geplante Spiele erlaubt"
+            });
+        }
+
+        // 3️⃣ Tipp speichern (Insert oder Update)
+        const tipResult = await pool.query(
+            `
+            INSERT INTO tips (user_id, spiel_id, heimtipp, gasttipp)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (user_id, spiel_id)
+            DO UPDATE SET
+                heimtipp = EXCLUDED.heimtipp,
+                gasttipp = EXCLUDED.gasttipp,
+                created_at = NOW()
+            RETURNING *
+            `,
+            [user_id, spiel_id, heimtipp, gasttipp]
+        );
+
+        res.json({
+            message: "Tipp gespeichert",
+            tip: tipResult.rows[0]
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Fehler beim Speichern des Tipps" });
+    }
+});
 
 
 app.get("/api/spiele", async (req, res) => {
