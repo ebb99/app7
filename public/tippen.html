@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiel tippen</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 16px;
+            max-width: 420px;
+            margin: auto;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 12px;
+            display: block;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            margin-top: 6px;
+        }
+
+        .tore {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tore input {
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        button {
+            margin-top: 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+        }
+
+        button:active {
+            background: #0056b3;
+        }
+
+        #meldung {
+            margin-top: 16px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Spiel tippen</h2>
+
+<label for="spielSelect">Geplantes Spiel</label>
+<select id="spielSelect">
+    <option value="">Bitte wählen …</option>
+</select>
+
+<label>Dein Tipp</label>
+<div class="tore">
+    <input type="number" id="heimtipp" min="0" placeholder="Heim">
+    <input type="number" id="gasttipp" min="0" placeholder="Gast">
+</div>
+
+<button id="btnTippen">Tipp speichern</button>
+
+<div id="meldung"></div>
+
+<script src="tippen.js"></script>
+
+</body>
+</html>

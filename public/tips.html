@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alle Tipps</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 16px;
+            max-width: 480px;
+            margin: auto;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .spiel {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            padding: 12px;
+        }
+
+        .spiel h3 {
+            margin: 0 0 6px 0;
+        }
+
+        .status {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .tipp {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tipp:last-child {
+            border-bottom: none;
+        }
+
+        .name {
+            font-weight: bold;
+        }
+
+        .ergebnis {
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Alle Tipps</h2>
+
+<div id="tipListe"></div>
+
+<script src="tips.js"></script>
+</body>
+</html>
